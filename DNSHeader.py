@@ -109,9 +109,9 @@ class DNSHeader(object):
           요청한다. 
           이 플래그는 응답에서 값이 바뀌지 않는다.
         """
-        if recursive_desired:
+        if recursive_desired == 1:
             self.rd = bitarray.bitarray([1])
-        else:
+        elif recursive_desired == 0:
             self.rd = bitarray.bitarray([0])
 
 
