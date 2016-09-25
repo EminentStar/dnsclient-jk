@@ -1,4 +1,5 @@
 import socket
+import sys
 
 
 PORT = 53
@@ -17,4 +18,7 @@ def get_local_dns_ip():
             local_dns = line.split()[1]
             break
     return local_dns
+
+
+get_ip_addr('www.naver.com')
 
