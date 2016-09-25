@@ -13,4 +13,4 @@
 ----
 ## 고민
 * **DNS 메시지 구조에 헤더는 바이트, 비트 단위던데, 이걸 어떻게 파이썬으로 표현할 것인가?**  
->> bitarray package로 해결 
+>> bitarray, struct package로 해결 
