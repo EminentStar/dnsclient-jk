@@ -171,9 +171,9 @@ class DNSHeader(object):
         self.counts += struct.pack('>h', ar_count)
          
 
-    def construct_DNSHeader(self):
-        self.header = self.did + self.flags + self.counts
-    
+    def to_bytes(self):
+        return self.did + self.flags + self.counts
+
     
     def get_flags(self):
         return self.flags
