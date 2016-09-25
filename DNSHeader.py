@@ -23,8 +23,17 @@ class DNSHeader(object):
         -------------------------------------------
 
     """
-    def __init__(self):
+    def __init__(self, opcode, recursive_desired, qd_count, an_count, ns_count, ar_count):
         self.set_did()        
+        self.set_dor()
+        self.set_opcode(opcode)
+        self.set_aa()
+        self.set_tc()
+        self.set_rd(recursive_desired)
+        self.set_ra()
+        self.set_z()
+        self.set_rcode()
+        self.set_counts(qd_count, an_count, ns_count, ar_count)
 
 
     def set_did(self):
@@ -32,15 +41,12 @@ class DNSHeader(object):
         self.did = struct.pack('>h', randnum)
 
     
-    def set_dor(self, is_query):
+    def set_dor(self):
         """
             OR 플래그는 1 bit이며, 
             0이면 query, 1이면 response로 메시지를 구분한다.
         """
-        if is_query:
-            self.dor = bitarray.bitarray([1])
-        else:
-            self.dor = bitarray.bitarray([0])
+        self.dor = bitarray.bitarray([0])
     
 
     def set_opcode(self, opcode):
@@ -165,18 +171,23 @@ class DNSHeader(object):
 
 
     def set_counts(self, qd_count, an_count, ns_count, ar_count):
-        self.counts += struct.pack('>h', qd_count)
+        self.counts = struct.pack('>h', qd_count)
         self.counts += struct.pack('>h', an_count)
         self.counts += struct.pack('>h', ns_count)
         self.counts += struct.pack('>h', ar_count)
          
 
     def to_bytes(self):
+        self.set_flags()
         return self.did + self.flags + self.counts
 
     
     def get_flags(self):
         return self.flags
+
+    
+    def get_counts(self):
+        return self.counts
 
 
     def str_to_bitlist(self, str):
