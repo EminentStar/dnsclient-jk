@@ -2,6 +2,7 @@ import socket
 import sys
 from DNSHeader import DNSHeader
 from DNSQuestionSection import DNSQuestionSection
+import dns_response_parser
 
 
 PORT = 53
@@ -34,6 +35,7 @@ def dns_query():
     except (socket.error, msg):
         print('Error Code: %s Message: %s' % (msg[0], msg[1]))
         sys.exit()
+    dns_response_parser.dns_response_parser(response[0])
 
 
 def get_local_dns_ip():
