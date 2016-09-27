@@ -2,6 +2,7 @@ import socket
 import sys
 from DNSHeader import DNSHeader
 from DNSQuestionSection import DNSQuestionSection
+import dns_response_parser
 
 
 PORT = 53
@@ -30,10 +31,16 @@ def dns_query():
         
         # TC에 대응하여 TCP 송신을 구현할 것인가??
         response = s.recvfrom(1024)
-        print(response)
     except (socket.error, msg):
         print('Error Code: %s Message: %s' % (msg[0], msg[1]))
         sys.exit()
+    
+    msg = response[0]
+    idx = 0
+    while idx < len(msg):
+        idx += 10
+
+    dns_response_parser.dns_response_parser(response[0])
 
 
 def get_local_dns_ip():
