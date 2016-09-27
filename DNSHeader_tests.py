@@ -1,5 +1,8 @@
+import sys
 import unittest
-from DNSHeader import DNSHeader
+sys.path.append("/")
+import dnsclientjk
+from dnsclientjk import DNSHeader
 
 
 class DNSHeaderTest(unittest.TestCase):

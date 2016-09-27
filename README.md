@@ -1,13 +1,12 @@
 # DNS Client 
 ----
 
-
-## get\_ip\_addr(hostname) return: ip\_addr
-----  
-### 로직  
-
-----
-## dns\_message\_parser도 필요할 듯
+* 사용법  
+$ python dnsclient.py 8.8.8.8 www.naver.com  
+(ENTER)  
+...  
+...  
+...  
 
 
 ----
