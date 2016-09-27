@@ -30,9 +30,9 @@ def dns_response_parser(msg):
     print(arcount)
     print(sections)
     """
-
+    
     get_resource_records(msg, qdcount, ancount, nscount, arcount)
-
+    
 
 def get_resource_records(msg, qdcount, ancount, nscount, arcount):
     """
@@ -45,9 +45,30 @@ def get_resource_records(msg, qdcount, ancount, nscount, arcount):
     print(qd_list)
     qd_len = len_of_str_list(qd_list) 
     an_list = parse_an_list(msg, 12 + qd_len, ancount)
+    flags_dict = parse_flags(msg[2:4])
+
     for ans in an_list:
         print(ans)
-        
+    
+    for key, value in flags_dict.items():
+        print('%s: %s'%(key, value))
+    
+
+def parse_flags(flags_bytes):
+    flags_bits = two_bytes_to_bits(flags_bytes)
+    flags_dict = {}
+    
+    flags_dict['qr'] = flags_bits[:1]
+    flags_dict['opcode'] = flags_bits[1:5]
+    flags_dict['aa'] = flags_bits[5:6]
+    flags_dict['tc'] = flags_bits[6:7]
+    flags_dict['rd'] = flags_bits[7:8]
+    flags_dict['ra'] = flags_bits[8:9]
+    flags_dict['z'] = flags_bits[9:12]
+    flags_dict['rcode'] = flags_bits[12:]
+    
+    return flags_dict
+
 
 def parse_qd_list(msg, qdcount):
     qd_loop_count = qdcount
@@ -135,24 +156,6 @@ def parse_an_list(msg, start_idx, ancount):
     return an_list
 
 
-def get_compressed_name_dev(msg, location):
-    """
-        함수 호출에서는 
-            해당 location에서 compressed name이 끝나는 지점까지
-            바이트단위로 chunk를 만들 필요가 있다.
-
-            바이트 단위로 msg를 location 인덱스부터 순회를 하면서 chunk를 더해나가고, 
-            is_comp_pointer(byte)의 값이 True가 나오면 
-                또 compression pointer가 나온 것이므로 RECURSIV CALL을 해야한다.
-            
-            그리고 또 b'\x00'이 나오면 compression pointer가 아닌 Name의 끝임을 알리는 것이므로
-            chunk를 return 한다.
-        ------------------------------------------------------------
-    """    
-    chunk = b''
-    idx = location
-
-
 def len_of_str_list(str_list):
     sum = 0
     for str in str_list:
@@ -209,9 +212,14 @@ def bytes_to_resource_record(bytes):
     """
 
 
-def two_bytes_to_int(bytes):
+def two_bytes_to_bits(bytes):
     first = '{0:08b}'.format(int(bytes[0]))
     second = '{0:08b}'.format(int(bytes[1]))
     concated = first + second
+    return concated
+
+
+def two_bytes_to_int(bytes):
+    concated = two_bytes_to_bits(bytes)
     return int(concated, 2)
    
