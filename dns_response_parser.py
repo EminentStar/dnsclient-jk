@@ -34,6 +34,21 @@ def dns_response_parser(msg):
     get_resource_records(msg, qdcount, ancount, nscount, arcount)
 
 
+def get_resource_records(msg, qdcount, ancount, nscount, arcount):
+    """
+        전체 메시지에서 question, answer RR을 파싱한다.
+    """
+    qd_list = parse_qd_list(msg, qdcount)
+    ns_list = []
+    ar_list = []
+
+    print(qd_list)
+    qd_len = len_of_str_list(qd_list) 
+    an_list = parse_an_list(msg, 12 + qd_len, ancount)
+    for ans in an_list:
+        print(ans)
+        
+
 def parse_qd_list(msg, qdcount):
     qd_loop_count = qdcount
     
@@ -133,23 +148,9 @@ def get_compressed_name_dev(msg, location):
             그리고 또 b'\x00'이 나오면 compression pointer가 아닌 Name의 끝임을 알리는 것이므로
             chunk를 return 한다.
         ------------------------------------------------------------
-    """
-    
-
-
-
-def get_resource_records(msg, qdcount, ancount, nscount, arcount):
-    """
-        전체 메시지에서 question, answer RR을 파싱한다.
-    """
-    qd_list = parse_qd_list(msg, qdcount)
-    ns_list = []
-    ar_list = []
-
-    print(qd_list)
-    qd_len = len_of_str_list(qd_list) 
-    an_list = parse_an_list(msg, 12 + qd_len, ancount)
-    print(an_list)
+    """    
+    chunk = b''
+    idx = location
 
 
 def len_of_str_list(str_list):
@@ -185,10 +186,20 @@ def get_compressed_name(msg, location):
     idx = location
 
     while msg[idx] != 0:
-        compressed_name += struct.pack('>B', msg[idx])
-        idx += 1
+        if is_comp_pointer(msg[idx]):
+            sub_pointer_location = get_pointer_reference_location(msg[idx: idx+2])
+            compressed_name += get_compressed_name(msg, sub_pointer_location)
+            break;        
 
-    compressed_name += b'\x00'
+        compressed_name += struct.pack('>B', msg[idx])
+
+        if msg[idx+1] == 0:
+            compressed_name += b'\x00'
+            break
+        
+        idx += 1
+        
+
     return compressed_name
 
 
