@@ -105,11 +105,11 @@ def parse_an_list(msg, start_idx, ancount):
             part_order += 1
         elif RRHeader(part_order) == RRHeader.resource_data:
             rdata = msg[idx: idx + rdlen]
-            
-            if rdata[len(rdata)-2] >= b'\xc0'[0]:
+             
+            if is_comp_pointer(rdata[len(rdata)-2]):
                 location = get_pointer_reference_location(rdata[len(rdata)-2:])
                 rdata = rdata[:len(rdata)-2] + get_compressed_name(msg, location)
-            
+         
             data += rdata
             copy_data = data[:]
             an_list.append(copy_data)
@@ -118,6 +118,24 @@ def parse_an_list(msg, start_idx, ancount):
             data = b''
 
     return an_list
+
+
+def get_compressed_name_dev(msg, location):
+    """
+        함수 호출에서는 
+            해당 location에서 compressed name이 끝나는 지점까지
+            바이트단위로 chunk를 만들 필요가 있다.
+
+            바이트 단위로 msg를 location 인덱스부터 순회를 하면서 chunk를 더해나가고, 
+            is_comp_pointer(byte)의 값이 True가 나오면 
+                또 compression pointer가 나온 것이므로 RECURSIV CALL을 해야한다.
+            
+            그리고 또 b'\x00'이 나오면 compression pointer가 아닌 Name의 끝임을 알리는 것이므로
+            chunk를 return 한다.
+        ------------------------------------------------------------
+    """
+    
+
 
 
 def get_resource_records(msg, qdcount, ancount, nscount, arcount):
