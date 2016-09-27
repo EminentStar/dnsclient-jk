@@ -1,6 +1,8 @@
 from enum import Enum
 import struct
 
+from DNSResourceRecord import DNSResourceRecord
+
 
 class RRHeader(Enum):
     name = 0
@@ -42,17 +44,20 @@ def get_resource_records(msg, qdcount, ancount, nscount, arcount):
     ns_list = []
     ar_list = []
 
-    print(qd_list)
     qd_len = len_of_str_list(qd_list) 
     an_list = parse_an_list(msg, 12 + qd_len, ancount)
     flags_dict = parse_flags(msg[2:4])
 
-    for ans in an_list:
-        print(ans)
-    
     for key, value in flags_dict.items():
         print('%s: %s'%(key, value))
+
+    an_rr_list = []
+    for ans in an_list:
+        an_rr_list.append(bytes_to_resource_record(ans))
     
+    for ans in an_rr_list:
+        ans.to_string()
+
 
 def parse_flags(flags_bytes):
     flags_bits = two_bytes_to_bits(flags_bytes)
@@ -113,7 +118,6 @@ def parse_an_list(msg, start_idx, ancount):
 
     while idx < msg_len:
         if RRHeader(part_order) == RRHeader.name:
-            print(msg[idx])
             if is_comp_pointer(msg[idx]):
                 location = get_pointer_reference_location(msg[idx: idx+2])
                 data += get_compressed_name(msg, location)
@@ -208,9 +212,12 @@ def get_compressed_name(msg, location):
 
 def bytes_to_resource_record(bytes):
     """
-        바이트로 묶여있는 RR을 올바른 형태의 RR로 변환한다.    
+        바이트로 묶여있는 RR을 올바른 형태의 RR로 변환한다.
     """
+    rr_parts = bytes.split(b' ')
+    rr = DNSResourceRecord(rr_parts[0], rr_parts[1], rr_parts[2], rr_parts[3], rr_parts[4], rr_parts[5])
 
+    return rr
 
 def two_bytes_to_bits(bytes):
     first = '{0:08b}'.format(int(bytes[0]))
@@ -222,4 +229,11 @@ def two_bytes_to_bits(bytes):
 def two_bytes_to_int(bytes):
     concated = two_bytes_to_bits(bytes)
     return int(concated, 2)
-   
+
+
+def four_bytes_to_int(bytes):
+    first = two_bytes_to_bits(bytes[:2])
+    second = two_bytes_to_bits(bytes[2:])
+    concated = first + second
+    return int(concated, 2)
+
